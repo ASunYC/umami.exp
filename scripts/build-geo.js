@@ -35,23 +35,28 @@ const download = url =>
     });
   });
 
-download(url).then(
-  res =>
-    new Promise((resolve, reject) => {
-      res.on('entry', entry => {
-        if (entry.path.endsWith('.mmdb')) {
-          const filename = path.join(dest, path.basename(entry.path));
-          entry.pipe(fs.createWriteStream(filename));
+const dest_db = path.resolve(__dirname, '../geo/' + db + '.mmdb');
+if (fs.existsSync(dest_db)) {
+  console.log('already exit geo database!');
+} else {
+  download(url).then(
+    res =>
+      new Promise((resolve, reject) => {
+        res.on('entry', entry => {
+          if (entry.path.endsWith('.mmdb')) {
+            const filename = path.join(dest, path.basename(entry.path));
+            entry.pipe(fs.createWriteStream(filename));
 
-          console.log('Saved geo database:', filename);
-        }
-      });
+            console.log('Saved geo database:', filename);
+          }
+        });
 
-      res.on('error', e => {
-        reject(e);
-      });
-      res.on('finish', () => {
-        resolve();
-      });
-    }),
-);
+        res.on('error', e => {
+          reject(e);
+        });
+        res.on('finish', () => {
+          resolve();
+        });
+      }),
+  );
+}
